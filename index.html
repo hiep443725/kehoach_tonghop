@@ -26,7 +26,7 @@
         .preview-container table {width:100%;border-collapse:collapse;margin:30px 0;border:1px solid black;}
         .preview-container th,.preview-container td {border:1px solid black;padding:12px;font-size:12pt;line-height:1.7;vertical-align:top;}
         .preview-container th {font-weight:bold;text-align:center;}
-        .preview-container td:first-child {font-weight:bold;text-align:center;background:#f9f9f9;}
+        .preview-container td:first-child {font-weight:bold;text-align:center;}
 
         .export-box {position:fixed;top:70px;right:20px;background:white;padding:20px;border-radius:8px;box-shadow:0 0 15px rgba(0,0,0,0.3);z-index:999;text-align:center;}
     </style>
@@ -136,7 +136,7 @@ function xemTruoc(){
             .join('<br>') || "&nbsp;";
 
         rows += `<tr>
-            <td style="width:25%;font-weight:bold;background:#f9f9f9;">${tenHS}</td>
+            <td style="width:25%;font-weight:bold;">${tenHS}</td>
             <td style="width:75%;">${noidung}</td>
         </tr>`;
     });
@@ -200,7 +200,7 @@ function exportToWord(){
     td,th {border:1px solid black;padding:12px;line-height:1.7;vertical-align:top;}
     th {background:#f0f0f0;text-align:center;font-weight:bold;}
     h1 {text-align:center;font-size:15pt;font-weight:bold;margin-bottom:30px;}
-    td:first-child {font-weight:bold;text-align:center;background:#f9f9f9;}
+    td:first-child {font-weight:bold;text-align:center;}
 </style>
 </head>
 <body><div>${content}</div></body></html>`;
@@ -212,3 +212,4 @@ function exportToWord(){
 </body>
 
 </html>
+
