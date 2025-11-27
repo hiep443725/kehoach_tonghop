@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <base href="./">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KẾ HOẠCH KỸ NĂNG GIAO TIẾP</title>
+    <style>
+        body {font-family:'Times New Roman',serif;background:#f4f6f9;margin:0;padding:0;}
+        .tab {overflow:hidden;background:#333;position:fixed;top:0;left:0;width:100%;z-index:1000;}
+        .tab button {background:#555;float:left;border:none;outline:none;cursor:pointer;padding:14px 24px;color:white;font-size:16px;transition:0.3s;}
+        .tab button:hover {background:#666;}
+        .tab button.active {background:#4CAF50;}
+        .tabcontent {margin-top:60px;padding:20px;display:none;}
+        .tabcontent.active {display:block;}
+
+        label {font-weight:bold;margin-top:12px;display:block;}
+        input,textarea {width:100%;padding:8px;margin:5px 0 10px;font-family:inherit;font-size:12pt;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;}
+        .field-group {background:white;padding:15px;border:1px solid #ddd;border-radius:8px;margin-bottom:15px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+        .add-btn {background:#2196F3;color:white;padding:10px 16px;border:none;cursor:pointer;border-radius:4px;font-size:15px;}
+        .remove-btn {background:#f44336;color:white;padding:6px 10px;border:none;cursor:pointer;border-radius:4px;margin-top:10px;}
+
+        .preview-wrapper {background:white;margin:20px auto;max-width:210mm;box-shadow:0 0 20px rgba(0,0,0,0.15);}
+        .preview-container {padding:2.5cm 2.5cm;background:white;min-height:297mm;}
+        .preview-container h1 {font-size:15pt;font-weight:bold;text-align:center;margin-bottom:30px;}
+        .preview-container table {width:100%;border-collapse:collapse;margin:30px 0;border:1px solid black;}
+        .preview-container th,.preview-container td {border:1px solid black;padding:12px;font-size:12pt;line-height:1.7;vertical-align:top;}
+        .preview-container th {background:#f0f0f0;font-weight:bold;text-align:center;}
+        .preview-container td:first-child {font-weight:bold;text-align:center;background:#f9f9f9;}
+
+        .export-box {position:fixed;top:70px;right:20px;background:white;padding:20px;border-radius:8px;box-shadow:0 0 15px rgba(0,0,0,0.3);z-index:999;text-align:center;}
+    </style>
+</head>
+<body>
+
+<div class="tab">
+    <button class="tablinks active" onclick="openTab(event,'Nhap')">Nhập liệu</button>
+    <button class="tablinks" onclick="openTab(event,'Xem')">Xem trước & Tải về</button>
+</div>
+
+<div id="Nhap" class="tabcontent active">
+    <h2>Nhập kế hoạch kỹ năng giao tiếp</h2>
+    
+    <label>Tháng/Năm</label>
+    <input type="text" id="thangNam" value="04/2025">
+    
+    <label>GVTH (Giáo viên thực hiện)</label>
+    <input type="text" id="gvth" value="Cô Ngân + Cô Huệ" placeholder="Ví dụ: Cô Ngân, Cô Trâm + Cô Tiên...">
+    
+    <label>Ngày ký</label>
+    <input type="text" id="ngayKy" value="Phú Nhuận, ngày 30 tháng 4 năm 2025">
+    
+    <label>Người ký (Quản lý chuyên môn)</label>
+    <input type="text" id="nguoiKy" value="ThS. Đới Thị Huệ">
+
+    <hr><h3>Danh sách học sinh & nội dung</h3>
+    <div id="dsLinhVuc"></div>
+    <button class="add-btn" onclick="themLinhVuc()">+ Thêm học sinh mới</button>
+</div>
+
+<div id="Xem" class="tabcontent">
+    <div class="export-box">
+        <strong style="font-size:18px;">TẢI FILE WORD</strong><br><br>
+        <label>Tên file (để trống = tự động):</label><br>
+        <input type="text" id="tenFile" style="width:340px;padding:10px;font-size:14pt;">
+        <br><br>
+        <button onclick="exportToWord()" style="padding:14px 32px;background:#d32f2f;color:white;border:none;font-size:18px;border-radius:6px;cursor:pointer;">
+            TẢI WORD
+        </button>
+    </div>
+
+    <div class="preview-wrapper">
+        <div class="preview-container" id="content"></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script>
+// Dữ liệu mẫu học sinh
+const mauLinhVuc = [
+    {hocsinh:"Thanh Vương", noidung:""},
+    {hocsinh:"Minh Lâm", noidung:""},
+    {hocsinh:"Khôi Vỹ", noidung:""},
+    {hocsinh:"Trọng Lễ", noidung:""},
+    {hocsinh:"Gia Khang", noidung:""},
+    {hocsinh:"Công Lý", noidung:""},
+    {hocsinh:"Kim Ngân", noidung:""},
+    {hocsinh:"Hồng Khôi", noidung:""},
+    {hocsinh:"Thiên Phú", noidung:""},
+    {hocsinh:"Anh Khoa", noidung:""},
+    {hocsinh:"Khánh Tường", noidung:""},
+    {hocsinh:"Thiên Di", noidung:""},
+    {hocsinh:"Hannal", noidung:""},
+    {hocsinh:"Thái khang", noidung:""},
+    {hocsinh:"Tâm An", noidung:""}
+
+];
+
+function themLinhVuc(d=null){
+    const item = d || {hocsinh:"", noidung:""};
+    const div = document.createElement('div');
+    div.className = 'field-group';
+    div.innerHTML = `
+        <label>Tên học sinh</label>
+        <input type="text" class="hocsinh" value="${item.hocsinh}">
+        <label>Nội dung</label>
+        <textarea rows="10" class="noidung" placeholder="Nhập nội dung chi tiết...">${item.noidung}</textarea>
+        <button class="remove-btn" onclick="this.parentElement.remove()">Xóa học sinh này</button>
+        <hr>
+    `;
+    document.getElementById('dsLinhVuc').appendChild(div);
+}
+
+// Tạo sẵn học sinh mẫu
+mauLinhVuc.forEach(item => themLinhVuc(item));
+
+function openTab(e, t){
+    document.querySelectorAll('.tabcontent').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tablinks').forEach(x => x.classList.remove('active'));
+    document.getElementById(t).classList.add('active');
+    e.currentTarget.classList.add('active');
+    if(t === 'Xem') xemTruoc();
+}
+
+function xemTruoc(){
+    const thangNam = document.getElementById('thangNam').value.trim();
+    const gvth     = document.getElementById('gvth').value.trim() || "……………………";
+    const ngayKy   = document.getElementById('ngayKy').value.trim();
+    const nguoiKy  = document.getElementById('nguoiKy').value.trim();
+
+    let rows = "";
+    document.querySelectorAll('.field-group').forEach(g => {
+        const tenHS = g.querySelector('.hocsinh').value.trim() || "Học sinh";
+        const noidung = g.querySelector('.noidung').value.trim()
+            .split('\n').map(l => l.trim()).filter(l => l)
+            .join('<br>') || "&nbsp;";
+
+        rows += `<tr>
+            <td style="width:25%;font-weight:bold;background:#f9f9f9;">${tenHS}</td>
+            <td style="width:75%;">${noidung}</td>
+        </tr>`;
+    });
+
+    const title = thangNam ? `KẾ HOẠCH KỸ NĂNG GIAO TIẾP – THÁNG ${thangNam}` : 'KẾ HOẠCH KỸ NĂNG GIAO TIẾP';
+
+    const html = `
+        <h1>${title}</h1>
+        <div style="text-align:center;font-weight:bold;margin-bottom:30px;font-size:13pt;">
+            GVTH: ${gvth}
+        </div>
+        <table cellpadding="0" cellspacing="0">
+            <tr>
+                <th width="25%"><strong>HỌC SINH</strong></th>
+                <th width="75%"><strong>NỘI DUNG</strong></th>
+            </tr>
+            ${rows}
+        </table>
+        <div style="text-align:right;margin-top:60px;font-style:italic;">
+            ${ngayKy}
+        </div>
+        <div style="text-align:right;margin-top:30px;font-weight:bold;">
+            QUẢN LÝ CHUYÊN MÔN<br><br><br><br>
+            ${nguoiKy}
+        </div>`;
+
+    document.getElementById('content').innerHTML = html;
+
+    // Tự động điền tên file
+    const tenDeNghi = `Ke_Hoach_Giao_Tiep_Thang_${thangNam.replace('/','_')}.doc`;
+    if(!document.getElementById('tenFile').value.trim()) {
+        document.getElementById('tenFile').value = tenDeNghi;
+    }
+}
+
+function exportToWord(){
+    xemTruoc();
+    const content = document.getElementById('content').innerHTML;
+    let tenFile = document.getElementById('tenFile').value.trim();
+    if(!tenFile){
+        const thangNam = document.getElementById('thangNam').value.trim().replace('/','_');
+        tenFile = `Ke_Hoach_Giao_Tiep_Thang_${thangNam}`;
+    }
+
+    const fullHtml = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head><meta charset="utf-8"><title>Kế hoạch kỹ năng giao tiếp</title>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+<w:Zoom>100</w:Zoom>
+<w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+    @page {size:A4 portrait;margin:2.5cm 2cm 2cm 2.5cm;}
+    body {font-family:'Times New Roman';font-size:12pt;}
+    table {width:100%;border-collapse:collapse;margin:30px 0;}
+    td,th {border:1px solid black;padding:12px;line-height:1.7;vertical-align:top;}
+    th {background:#f0f0f0;text-align:center;font-weight:bold;}
+    h1 {text-align:center;font-size:15pt;font-weight:bold;margin-bottom:30px;}
+    td:first-child {font-weight:bold;text-align:center;background:#f9f9f9;}
+</style>
+</head>
+<body><div>${content}</div></body></html>`;
+
+    const blob = new Blob(['\ufeff', fullHtml], {type: 'application/msword'});
+    saveAs(blob, tenFile + '.doc');
+}
+</script>
+</body>
+</html>
